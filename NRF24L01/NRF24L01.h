@@ -2,7 +2,7 @@
  * NRF24L01.h
  *
  *  Created on: Mar 24, 2021
- *  Author: controllerstech
+ *  Author: TPN
  */
 
 #ifndef INC_NRF24L01_H_
