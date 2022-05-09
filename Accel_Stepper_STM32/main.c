@@ -30,6 +30,14 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+/*Declaire acceleraation for each stepper*/
+Acceleration_t Stepper1;
+Acceleration_t Stepper2;
+/*
+.
+.
+Acceleration_t Stepper#n
+*/
 
 /* USER CODE END PTD */
 
@@ -46,21 +54,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-int actual_angleY;
-int angleY;
-int actual_angleZ;
-int angleZ;
-uint8_t flag=0;
-uint8_t state = 0;
-uint8_t state_step2 = 0;
-uint32_t itr =0;
-uint8_t fr=1;
-float u_stp2 = 0;
-float h_stp2  = 0;
-float h1_stp2  = 0;
-float sp_stp2  = 0;
-float a_stp2=6;// a2=10;              //a = slope
-float c_stp2=0.3; //c2 =9.4;         //c = half_point
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,9 +111,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  stepper_motor_set_param(MOTOR_X, 100);
 //	  HAL_TIM_Base_Start_IT(&htim14);
-  Accel_Stepper_SetPin(STEPPER1, step_GPIO_Port, step_Pin, dir_GPIO_Port, dir_Pin);
-  Accel_Stepper_SetTimer(STEPPER1, &htim14);
-  Accel_Stepper_Move(STEPPER1, 640000, 5000, 5000, 1000);
+  Accel_Stepper_SetPin(&Stepper1, step_GPIO_Port, step_Pin, dir_GPIO_Port, dir_Pin);
+  Accel_Stepper_SetTimer(&Stepper1, &htim14);
+  Accel_Stepper_Move(&Stepper1, 640000, 5000, 5000, 1000);
 //  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
@@ -176,7 +170,7 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 	  if(htim->Instance == TIM14){//stepper3
-		  Accel_Stepper_TIMIT_Handler(STEPPER1);
+		  Accel_Stepper_TIMIT_Handler(&Stepper1);
 //		 flag = 1;
 //			if (angleZ < actual_angleZ){
 //				 HAL_GPIO_WritePin(dir_GPIO_Port, dir_Pin, 1);
