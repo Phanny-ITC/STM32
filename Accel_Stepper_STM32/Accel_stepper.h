@@ -68,10 +68,10 @@ typedef struct {
 	TIM_HandleTypeDef* htim;
 } Acceleration_t;
 
-void Accel_Stepper_SetTimer(Stepper_t stepper, TIM_HandleTypeDef* htim);
-void Accel_Stepper_SetPin(Stepper_t stepper, GPIO_TypeDef* step_port, uint16_t step_pin, GPIO_TypeDef* dir_port, uint16_t dir_pin);
-void Accel_Stepper_Move(Stepper_t stepper, signed int step, unsigned int accel, unsigned int decel, unsigned int rpm);//acc*100
-void Accel_Stepper_TIMIT_Handler(Stepper_t stepper);
+void Accel_Stepper_SetTimer(Acceleration_t *Accel_stepper, TIM_HandleTypeDef* htim);
+void Accel_Stepper_SetPin(Acceleration_t *Accel_stepper, GPIO_TypeDef* step_port, uint16_t step_pin, GPIO_TypeDef* dir_port, uint16_t dir_pin);
+void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned int accel, unsigned int decel, unsigned int rpm);//acc*100
+void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper);
 
 
 #endif /* INC_ACCEL_STEPPER_H_ */
