@@ -61,6 +61,14 @@ typedef struct {
 	signed int min_step_delay;
 //  Counter used when accelerateing/decelerateing to calculate step_delay.
 	signed int accel_count;
+//  Counting steps when moving.
+	unsigned int step_count;
+//  Keep track of remainder from new_step-delay calculation to increase accuracy
+	unsigned int rest;
+	unsigned int new_step_delay;// Holds next delay period.
+//  Remember the last step delay used when accelerating.
+	unsigned int last_accel_delay;
+
 	GPIO_TypeDef* Step_Port;
 	GPIO_TypeDef* Dir_Port;
 	uint16_t Step_Pin;
