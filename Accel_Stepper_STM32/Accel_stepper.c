@@ -42,19 +42,12 @@ void Accel_Stepper_SetTimer(Acceleration_t *Accel_stepper, TIM_HandleTypeDef* ti
  */
 void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 
-	unsigned int new_step_delay;// Holds next delay period.
-	// Remember the last step delay used when accelerating.
-	static int last_accel_delay;
-	// Counting steps when moving.
-	static unsigned int step_count = 0;
-	// Keep track of remainder from new_step-delay calculation to increase accuracy
-	static unsigned int rest = 0;
 	__HAL_TIM_SET_AUTORELOAD(Accel_stepper->htim, Accel_stepper->step_delay);
 
 	switch(Accel_stepper->run_state) {
 		case STOP:
-		   	step_count = 0;
-		   	rest = 0;
+			Accel_stepper->step_count = 0;
+			Accel_stepper->rest = 0;
 		     // Stop Timer/Counter 1.
 		   	HAL_TIM_Base_Stop_IT(Accel_stepper->htim);
 //		      status.running = false;
@@ -62,24 +55,27 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 	    case ACCEL:
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
-	    	HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			step_count++;
+//	    	HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+	    	HAL_GPIO_TogglePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin);
+	    	Accel_stepper->step_count++;
 			Accel_stepper->accel_count++;
-			new_step_delay = Accel_stepper->step_delay - (((2 * (long)Accel_stepper->step_delay) + rest)/(4 * Accel_stepper->accel_count + 1));
-			rest = ((2 * (long)Accel_stepper->step_delay)+rest)%(4 * Accel_stepper->accel_count + 1);
+			Accel_stepper->new_step_delay = Accel_stepper->step_delay - (((2 * (long)Accel_stepper->step_delay) + Accel_stepper->rest)/(4 * Accel_stepper->accel_count + 1));
+			Accel_stepper->rest = ((2 * (long)Accel_stepper->step_delay)+Accel_stepper->rest)%(4 * Accel_stepper->accel_count + 1);
 	      // Chech if we should start decelration.
-			if(step_count >= Accel_stepper->decel_start) {
+			if(Accel_stepper->step_count >= Accel_stepper->decel_start) {
 				Accel_stepper->accel_count = Accel_stepper->decel_val;
 				Accel_stepper->run_state = DECEL;
 			}
 		      // Chech if we hitted max speed.
-			else if(new_step_delay <= Accel_stepper->min_step_delay) {
-				last_accel_delay = new_step_delay;
-				new_step_delay = Accel_stepper->min_step_delay;
-				rest = 0;
+			else if(Accel_stepper->new_step_delay <= Accel_stepper->min_step_delay) {
+				Accel_stepper->last_accel_delay = Accel_stepper->new_step_delay;
+				Accel_stepper->new_step_delay = Accel_stepper->min_step_delay;
+				Accel_stepper->rest = 0;
 				Accel_stepper->run_state = RUN;
 			}
 			break;
@@ -87,17 +83,20 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 	    case RUN:
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			 step_count++;
-			 new_step_delay = Accel_stepper->min_step_delay;
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+	    	HAL_GPIO_TogglePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin);
+	    	Accel_stepper->step_count++;
+	    	Accel_stepper->new_step_delay = Accel_stepper->min_step_delay;
 //	         Check if we should start deceleration.
-			 if(step_count >= Accel_stepper->decel_start) {
+			 if(Accel_stepper->step_count >= Accel_stepper->decel_start) {
 				 Accel_stepper->accel_count = Accel_stepper->decel_val;
 //	         Start deceleration with same delay as accel ended with.
-				 new_step_delay = last_accel_delay;
+				 Accel_stepper->new_step_delay = Accel_stepper->last_accel_delay;
 				 Accel_stepper->run_state = DECEL;
 			 }
 			 break;
@@ -105,21 +104,24 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 	    case DECEL:
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
-			 step_count++;
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+//			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 0);
+	    	HAL_GPIO_TogglePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin);
+	    	Accel_stepper->step_count++;
 			 Accel_stepper->accel_count++;
-			 new_step_delay = Accel_stepper->step_delay + (((2 * (long)Accel_stepper->step_delay) + rest)/(4 * abs(Accel_stepper->accel_count) + 1));
-			 rest = ((2 * (long)Accel_stepper->step_delay)+rest)%(4 * (long) abs(Accel_stepper->accel_count) + 1);
+			 Accel_stepper->new_step_delay = Accel_stepper->step_delay + (((2 * (long)Accel_stepper->step_delay) + Accel_stepper->rest)/(4 * abs(Accel_stepper->accel_count) + 1));
+			 Accel_stepper->rest = ((2 * (long)Accel_stepper->step_delay)+Accel_stepper->rest)%(4 * (long) abs(Accel_stepper->accel_count) + 1);
 //	         Check if we at last step
 			 if(Accel_stepper->accel_count >= 0){
 				 Accel_stepper->run_state = STOP;
 			 }
 			 break;
 	  }
-	 Accel_stepper->step_delay = new_step_delay;
+	 Accel_stepper->step_delay = Accel_stepper->new_step_delay;
 //		  return rc;
 }
 /*
@@ -136,6 +138,7 @@ void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned
 	unsigned int max_step_lim; //! Number of steps before we hit max speed.
 	unsigned int accel_lim;//! Number of steps before we must start deceleration (if accel does not hit max speed).
 	unsigned int speed = 2 * 3.14159 * rpm/60;
+	Accel_stepper->step_count = 0;
 //   Set direction from sign on step value.
 	if(step < 0){
 //    srd.dir = CCW;
@@ -149,6 +152,7 @@ void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned
 
 //  If moving only 1 step.
 	if(step == 1){
+
 //      Move one step...
 		Accel_stepper->accel_count = -1;
 //      ...in DECEL state.
