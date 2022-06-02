@@ -169,7 +169,8 @@ void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned
 //	   Accel[stepper].min_step_delay = alpha*t_freq / speed; //speed(rad/s)
 //	   ARR=freq*t, where t=60/step/rpm; t here is in second unit (s) step = 6400(1/32)
 
-		Accel_stepper->min_step_delay = (9375/rpm);
+//		Accel_stepper->min_step_delay = (9375/rpm);
+		Accel_stepper->min_step_delay = ALPHA*TIM_FREQ/speed;
 
 //      Set acceleration by calc the first (c0) step delay .
 //      step_delay = 1/tt * sqrt(2*alpha/accel)
