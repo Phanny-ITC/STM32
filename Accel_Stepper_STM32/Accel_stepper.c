@@ -50,9 +50,10 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 			Accel_stepper->rest = 0;
 		     // Stop Timer/Counter 1.
 		   	HAL_TIM_Base_Stop_IT(Accel_stepper->htim);
-//		      status.running = false;
+		   	Accel_stepper->run_status = 0;
 		   	break;
 	    case ACCEL:
+	    	Accel_stepper->run_status = 1;
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
 //	    	HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
@@ -81,6 +82,7 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 			break;
 
 	    case RUN:
+	    	Accel_stepper->run_status = 1;
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
 //			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
@@ -102,6 +104,7 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 			 break;
 
 	    case DECEL:
+	    	Accel_stepper->run_status = 1;
 //		      rc = srd.dir;
 //	    	 Generate pulse for stepper driver
 //			 HAL_GPIO_WritePin(Accel_stepper->Step_Port, Accel_stepper->Step_Pin, 1);
