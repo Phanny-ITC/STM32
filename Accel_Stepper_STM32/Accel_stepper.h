@@ -47,6 +47,7 @@ typedef enum{
 	STEPPER6
 }Stepper_t;
 typedef struct {
+	uint8_t run_status;
 //  speed ramp state we are in.
 	ramp_state_t run_state;
 //  Direction stepper motor should move.
