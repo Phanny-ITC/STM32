@@ -33,6 +33,11 @@
 /*Declaire acceleraation for each stepper*/
 Acceleration_t Stepper1;
 Acceleration_t Stepper2;
+Acceleration_t Stepper3;
+Acceleration_t Stepper4;
+Acceleration_t Stepper5;
+Acceleration_t Stepper6;
+
 /*
 .
 .
@@ -67,15 +72,15 @@ void stepper_set_rpm (uint16_t rpm);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void stepper_set_rpm (uint16_t rpm)  // Set rpm--> max 13, min 1,,,  went to 14 rev/min
+void DelayUs_step(uint32_t us)
 {
-	//  stepper2:psc15+1,period2000-1:2500hz,400us
-	//	  						1000-1:5000hz,200us
-	//	  ARR=48M*t/(15+1), where t=60/step/rpm;t here is in second unit (s) step = 2*6400(1/32)
-	uint16_t arr = (uint16_t) (9375/rpm) - 1;//9375 is range/resolution for min rpm
-	__HAL_TIM_SET_AUTORELOAD(&htim14, arr);
-//	(&htim14)->Instance->ARR = (arr);
+	HAL_TIM_Base_Start_IT(&htim14);
+	//(&htim7)->Instance->CNT = (0);
+	__HAL_TIM_SET_COUNTER(&htim14, 0);
+	while(__HAL_TIM_GET_COUNTER(&htim14) < us);
+	HAL_TIM_Base_Stop_IT(&htim14);
 }
+
 
 /* USER CODE END 0 */
 
@@ -111,10 +116,19 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  stepper_motor_set_param(MOTOR_X, 100);
 //	  HAL_TIM_Base_Start_IT(&htim14);
-  Accel_Stepper_SetPin(&Stepper1, step_GPIO_Port, step_Pin, dir_GPIO_Port, dir_Pin);
-  Accel_Stepper_SetTimer(&Stepper1, &htim14);
-  Accel_Stepper_Move(&Stepper1, 640000, 5000, 5000, 1000);
-//  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+	  Accel_Stepper_SetPin(&Stepper1, step_1_GPIO_Port, step_1_Pin, dir_1_GPIO_Port, dir_1_Pin);
+	  Accel_Stepper_SetPin(&Stepper2, step_2_GPIO_Port, step_2_Pin, dir_2_GPIO_Port, dir_2_Pin);
+	  Accel_Stepper_SetPin(&Stepper3, step_3_GPIO_Port, step_3_Pin, dir_3_GPIO_Port, dir_3_Pin);
+	  Accel_Stepper_SetPin(&Stepper4, step_4_GPIO_Port, step_4_Pin, dir_4_GPIO_Port, dir_4_Pin);
+	  Accel_Stepper_SetPin(&Stepper5, step_5_GPIO_Port, step_5_Pin, dir_5_GPIO_Port, dir_5_Pin);
+	  Accel_Stepper_SetPin(&Stepper6, step_6_GPIO_Port, step_6_Pin, dir_6_GPIO_Port, dir_6_Pin);
+	  Accel_Stepper_SetTimer(&Stepper1, &htim7);
+	  Accel_Stepper_SetTimer(&Stepper2, &htim9);
+	  Accel_Stepper_SetTimer(&Stepper3, &htim10);
+	  Accel_Stepper_SetTimer(&Stepper4, &htim11);
+	  Accel_Stepper_SetTimer(&Stepper5, &htim12);
+	  Accel_Stepper_SetTimer(&Stepper6, &htim13);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,7 +138,15 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  stepper_motor_set_param(MOTOR_X, fr);
+	  if(Stepper1.run_status != 0){
+		  Accel_Stepper_Move(&Stepper1, set_theta1, 1000, 1000, 200);
+		  set_theta1 = 0;//reset steps to 0 (prevent re-run after done)
+	  }
+	  if(Stepper2.run_status != 0){
+		  Accel_Stepper_Move(&Stepper2, set_theta2, 1000, 1000, 200);
+	  }
+	
+
   }
   /* USER CODE END 3 */
 }
@@ -171,60 +193,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 	  if(htim->Instance == TIM14){//stepper3
 		  Accel_Stepper_TIMIT_Handler(&Stepper1);
-//		 flag = 1;
-//			if (angleZ < actual_angleZ){
-//				 HAL_GPIO_WritePin(dir_GPIO_Port, dir_Pin, 1);
-//				 if(itr<20000){
-//					 u_stp2 = 5+ h_stp2;
-//					 h_stp2 +=0.02;
-//					 itr++;
-//				 }
-//				 if((actual_angleZ-angleZ) <= 20000){//20% of 6cm
-//				  		sp_stp2 = u_stp2 - h1_stp2;
-//				  		h_stp2 += 0.003;
-//				 }else sp_stp2 = u_stp2;
-////				 HAL_GPIO_TogglePin(step_GPIO_Port, step_Pin);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 1);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 1);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 0);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 0);
-//				 state_step2 =! state_step2;
-//				 if(state_step2==0) actual_angleZ--;
-//
-//				 stepper_set_rpm((uint16_t) sp_stp2);
-//
-//			}
-//			else if (angleZ > actual_angleZ){
-//				 HAL_GPIO_WritePin(dir_GPIO_Port, dir_Pin, 0);
-//				 if(itr<20000){
-//					  //Ts = micro_second/1000; //sample time
-//	//				 u_stp2 = 0.0005 * itr;
-//	//				 sp_stp2 = 45 * (1/(1 + exp(-a_stp2*(u_stp2-c_stp2))));     // S-curve acceleration
-//					 itr++;
-//					 u_stp2 = 5 + h_stp2;
-//					 h_stp2 +=0.02;
-//				 }
-//				 if((angleZ-actual_angleZ) <= 20000){//20% of 6cm
-//					  sp_stp2 = u_stp2 - h1_stp2;
-//					  h_stp2 += 0.003;
-//				 }else sp_stp2 = u_stp2;
-////				 HAL_GPIO_TogglePin(step_GPIO_Port, step_Pin);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 1);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 1);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 0);
-//				 HAL_GPIO_WritePin(step_GPIO_Port, step_Pin, 0);
-//				 state_step2 =! state_step2;
-//				 if(state_step2==0) actual_angleZ++;
-//				 stepper_set_rpm((uint32_t) sp_stp2);
-//			 }else{
-//				 actual_angleZ = angleZ;
-//				 state_step2=0;
-//				 itr=0;
-//				 u_stp2 = 0;
-//				 h_stp2  = 0;
-//				 h1_stp2  = 0;
-//				 sp_stp2 = 60;
-//			 }
 	  }
 }
 //static unsigned long my_sqrt(unsigned long x)
