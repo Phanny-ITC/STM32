@@ -13,8 +13,9 @@
 
 //Acceleration_t Accel[sizeof(Stepper_t)];
 /*
- * Set GPIO for each stepper
- * Accel_stepper :
+ * Set GPIO Pin for each stepper
+ * Accel_stepper : Pointer struct handler of Acceleration_t
+ * TODO: must declare Acceleration_t handler in main.c (suport multi-handler)
  * step_port : GPIO port of step pin
  * step_pin : gpio pin number of step pin
  * dir_port : GPIO port of direction pin
@@ -30,7 +31,6 @@ void Accel_Stepper_SetPin(Acceleration_t* Accel_stepper, GPIO_TypeDef* step_port
 }
 /*
  * Set Timer for each motor
- * stepper : Num of which stepper use found @ Stepper_t
  * timer : pointer to timer typedef(Which timer is use for control speed)
  */
 void Accel_Stepper_SetTimer(Acceleration_t *Accel_stepper, TIM_HandleTypeDef* timer){
@@ -129,7 +129,8 @@ void Accel_Stepper_TIMIT_Handler(Acceleration_t *Accel_stepper){
 }
 /*
  * Accel_Stepper_Move
- * stepper : Number of which stepper use found @ Stepper_t
+ * Accel_stepper : Pointer struct handler of Acceleration_t
+ * TODO: must declare Acceleration_t handler in main.c (suport multi-handler)
  * step : Number of step to run
  * accel : acceleration
  * decel : deceleration
@@ -146,10 +147,11 @@ void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned
 	if(step < 0){
 //    srd.dir = CCW;
 		HAL_GPIO_WritePin(Accel_stepper->Dir_Port, Accel_stepper->Dir_Pin, 0);
-		step = -step;
+		step = -2*step;
 	}
-	else{
+	if(step>0){
 		HAL_GPIO_WritePin(Accel_stepper->Dir_Port, Accel_stepper->Dir_Pin, 1);
+		step = 2*step;
 //    srd.dir = CW;
 	}
 
