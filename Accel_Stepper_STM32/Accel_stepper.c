@@ -143,17 +143,18 @@ void Accel_Stepper_Move(Acceleration_t *Accel_stepper, signed int step, unsigned
 	unsigned int accel_lim;//! Number of steps before we must start deceleration (if accel does not hit max speed).
 	unsigned int speed = 2 * 3.14159 * rpm/60;
 	Accel_stepper->step_count = 0;
+	if(step>0){
+		HAL_GPIO_WritePin(Accel_stepper->Dir_Port, Accel_stepper->Dir_Pin, 1);
+		step = 2*step;
+//    srd.dir = CW;
+	}
 //   Set direction from sign on step value.
 	if(step < 0){
 //    srd.dir = CCW;
 		HAL_GPIO_WritePin(Accel_stepper->Dir_Port, Accel_stepper->Dir_Pin, 0);
 		step = -2*step;
 	}
-	if(step>0){
-		HAL_GPIO_WritePin(Accel_stepper->Dir_Port, Accel_stepper->Dir_Pin, 1);
-		step = 2*step;
-//    srd.dir = CW;
-	}
+
 
 //  If moving only 1 step.
 	if(step == 1){
